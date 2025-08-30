@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Finder</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .info-item {
+            text-align: center;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #6e8efb;
+        }
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .target-character {
+            font-size: 4rem;
+            text-align: center;
+            color: #6e8efb;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .scene-container {
+            background-color: #e0f7fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .scene {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+            max-width: 600px;
+        }
+        .character {
+            width: 50px;
+            height: 50px;
+            background-color: #80deea;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        .character:hover {
+            transform: scale(1.1);
+            background-color: #4dd0e1;
+        }
+        .character.hidden {
+            background-color: #b2ebf2;
+            color: transparent;
+        }
+        .character.target {
+            background-color: #6e8efb;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .message {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #6e8efb;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Character Finder</h1>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Level</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Time</div>
+                <div class="info-value" id="time">60</div>
+            </div>
+        </div>
+        
+        <div class="target-character" id="target-character">A</div>
+        
+        <div class="message" id="message">Find all the letter A's in the scene!</div>
+        
+        <div class="scene-container">
+            <div class="scene" id="scene">
+                <!-- Characters will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="new-game">New Game</button>
+            <button class="btn" id="next-level">Next Level</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <p>Look at the large letter at the top of the screen. Find and click all the matching letters in the scene below.</p>
+            <p>Each level has more characters and less time. How many levels can you complete?</p>
+        </div>
+    </div>
+
+    <script>
+        // Character Finder game implementation
+        class CharacterFinderGame {
+            constructor() {
+                this.score = 0;
+                this.level = 1;
+                this.timeLeft = 60;
+                this.targetCharacter = 'A';
+                this.totalCharacters = 20;
+                this.foundCharacters = 0;
+                this.totalTargetCharacters = 0;
+                this.timer = null;
+                
+                this.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                this.sceneCharacters = [];
+                
+                this.initGame();
+                this.addEventListeners();
+            }
+            
+            initGame() {
+                this.generateTargetCharacter();
+                this.generateScene();
+                this.updateUI();
+                this.startTimer();
+            }
+            
+            generateTargetCharacter() {
+                // For early levels, use common letters
+                const commonLetters = "AEIOUHLNRST";
+                if (this.level <= 3) {
+                    this.targetCharacter = commonLetters[Math.floor(Math.random() * commonLetters.length)];
+                } else {
+                    this.targetCharacter = this.alphabet[Math.floor(Math.random() * this.alphabet.length)];
+                }
+                document.getElementById('target-character').textContent = this.targetCharacter;
+            }
+            
+            generateScene() {
+                const scene = document.getElementById('scene');
+                scene.innerHTML = '';
+                
+                // Adjust difficulty based on level
+                this.totalCharacters = 20 + (this.level * 5);
+                if (this.totalCharacters > 100) this.totalCharacters = 100;
+                
+                this.sceneCharacters = [];
+                this.foundCharacters = 0;
+                this.totalTargetCharacters = 0;
+                
+                // Generate characters for the scene
+                for (let i = 0; i < this.totalCharacters; i++) {
+                    const charDiv = document.createElement('div');
+                    charDiv.className = 'character';
+                    
+                    // Higher chance of target character in early levels
+                    let character;
+                    if (Math.random() < (0.3 - (this.level * 0.02))) {
+                        character = this.targetCharacter;
+                        this.totalTargetCharacters++;
+                    } else {
+                        character = this.alphabet[Math.floor(Math.random() * this.alphabet.length)];
+                    }
+                    
+                    charDiv.textContent = character;
+                    charDiv.dataset.character = character;
+                    
+                    if (character === this.targetCharacter) {
+                        charDiv.classList.add('hidden');
+                    }
+                    
+                    charDiv.addEventListener('click', () => {
+                        this.handleCharacterClick(charDiv);
+                    });
+                    
+                    scene.appendChild(charDiv);
+                    this.sceneCharacters.push(charDiv);
+                }
+                
+                // Ensure at least one target character exists
+                if (this.totalTargetCharacters === 0) {
+                    const randomIndex = Math.floor(Math.random() * this.sceneCharacters.length);
+                    this.sceneCharacters[randomIndex].textContent = this.targetCharacter;
+                    this.sceneCharacters[randomIndex].dataset.character = this.targetCharacter;
+                    this.sceneCharacters[randomIndex].classList.add('hidden');
+                    this.totalTargetCharacters = 1;
+                }
+            }
+            
+            handleCharacterClick(characterDiv) {
+                const character = characterDiv.dataset.character;
+                
+                if (character === this.targetCharacter) {
+                    characterDiv.classList.remove('hidden');
+                    characterDiv.classList.add('target');
+                    this.foundCharacters++;
+                    
+                    // Update score
+                    this.score += 10 * this.level;
+                    this.updateUI();
+                    
+                    // Check if all target characters found
+                    if (this.foundCharacters === this.totalTargetCharacters) {
+                        this.levelComplete();
+                    }
+                } else {
+                    // Wrong character clicked - penalty
+                    this.score = Math.max(0, this.score - 5);
+                    this.updateUI();
+                    
+                    // Visual feedback for wrong click
+                    characterDiv.style.backgroundColor = '#f44336';
+                    characterDiv.style.color = 'white';
+                    setTimeout(() => {
+                        characterDiv.style.backgroundColor = '';
+                        characterDiv.style.color = '';
+                    }, 300);
+                }
+            }
+            
+            levelComplete() {
+                document.getElementById('message').innerHTML = 
+                    `<span class="success">Level ${this.level} complete! Found ${this.foundCharacters} ${this.targetCharacter}'s</span>`;
+                
+                // Bonus for completing level
+                this.score += 50 * this.level;
+                this.updateUI();
+                
+                // Stop timer
+                clearInterval(this.timer);
+            }
+            
+            startTimer() {
+                clearInterval(this.timer);
+                
+                // Adjust time based on level
+                this.timeLeft = Math.max(10, 60 - (this.level * 5));
+                this.updateUI();
+                
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateUI();
+                    
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        document.getElementById('message').innerHTML = 
+                            `<span style="color: #f44336;">Time's up! Game Over</span>`;
+                    }
+                }, 1000);
+            }
+            
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('time').textContent = this.timeLeft;
+            }
+            
+            nextLevel() {
+                this.level++;
+                this.initGame();
+                document.getElementById('message').textContent = `Find all the letter ${this.targetCharacter}'s in the scene!`;
+            }
+            
+            newGame() {
+                this.score = 0;
+                this.level = 1;
+                this.timeLeft = 60;
+                clearInterval(this.timer);
+                this.initGame();
+                document.getElementById('message').textContent = `Find all the letter ${this.targetCharacter}'s in the scene!`;
+            }
+            
+            addEventListeners() {
+                document.getElementById('new-game').addEventListener('click', () => {
+                    this.newGame();
+                });
+                
+                document.getElementById('next-level').addEventListener('click', () => {
+                    this.nextLevel();
+                });
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new CharacterFinderGame();
+        };
+    </script>
+</body>
+</html>

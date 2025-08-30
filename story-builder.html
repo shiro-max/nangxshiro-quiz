@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Story Builder</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .info-item {
+            text-align: center;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #6e8efb;
+        }
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .story-area {
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        .story-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 150px;
+        }
+        .word-bank {
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .word-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .word-option {
+            background: linear-gradient(to bottom, #6e8efb, #a777e3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        .word-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .word-option.selected {
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .story-display {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            min-height: 200px;
+        }
+        .story-display p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        .highlight {
+            background-color: #fff9c4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .message {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #6e8efb;
+            margin-top: 0;
+        }
+        .story-title {
+            text-align: center;
+            color: #6e8efb;
+            font-size: 1.8rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class=\"container\">
+        <h1>Story Builder</h1>
+        
+        <div class=\"game-info\">
+            <div class=\"info-item\">
+                <div class=\"info-label\">Score</div>
+                <div class=\"info-value\" id=\"score\">0</div>
+            </div>
+            <div class=\"info-item\">
+                <div class=\"info-label\">Creativity</div>
+                <div class=\"info-value\" id=\"creativity\">0</div>
+            </div>
+            <div class=\"info-item\">
+                <div class=\"info-label\">Stories</div>
+                <div class=\"info-value\" id=\"stories-completed\">0</div>
+            </div>
+        </div>
+        
+        <div class=\"message\" id=\"message\">Create amazing stories by choosing the right words!</div>
+        
+        <div class=\"story-title\" id=\"story-title\">The Adventure Begins</div>
+        
+        <div class=\"story-area\">
+            <div class=\"story-text\" id=\"story-text\">
+                Once upon a time, in a <span class=\"highlight\" id=\"blank1\">[ADJECTIVE]</span> land, 
+                there lived a <span class=\"highlight\" id=\"blank2\">[NOUN]</span> who loved to 
+                <span class=\"highlight\" id=\"blank3\">[VERB]</span>. Every day, the 
+                <span class=\"highlight\" id=\"blank4\">[NOUN]</span> would 
+                <span class=\"highlight\" id=\"blank5\">[VERB]</span> around the 
+                <span class=\"highlight\" id=\"blank6\">[PLACE]</span>.
+            </div>
+        </div>
+        
+        <div class=\"word-bank\">
+            <h3>Choose Words to Complete Your Story</h3>
+            <p>Click on words to select them for each blank in the story</p>
+            
+            <div class=\"word-options\" id=\"word-options\">
+                <!-- Word options will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class=\"controls\">
+            <button class=\"btn\" id=\"check-story\">Check Story</button>
+            <button class=\"btn\" id=\"new-story\">New Story</button>
+            <button class=\"btn\" id=\"read-story\">Read Story</button>
+        </div>
+        
+        <div class=\"story-display\" id=\"story-display\" style=\"display: none;\">
+            <h3>Your Completed Story</h3>
+            <p id=\"completed-story\"></p>
+            <button class=\"btn\" id=\"back-to-builder\">Back to Builder</button>
+        </div>
+        
+        <div class=\"instructions\">
+            <h3>How to Play:</h3>
+            <p>1. Click on highlighted blanks in the story to select them</p>
+            <p>2. Choose appropriate words from the word bank to fill the blanks</p>
+            <p>3. Click \"Check Story\" to see your completed story</p>
+            <p>4. Be creative and have fun building unique stories!</p>
+        </div>
+    </div>
+
+    <script>
+        // Story Builder game implementation
+        class StoryBuilderGame {
+            constructor() {
+                this.score = 0;
+                this.creativity = 0;
+                this.storiesCompleted = 0;
+                this.currentBlank = null;
+                this.storyWords = {};
+                
+                // Story templates
+                this.storyTemplates = [
+                    {
+                        title: \"The Adventure Begins\",
+                        text: \"Once upon a time, in a [ADJECTIVE] land, there lived a [NOUN] who loved to [VERB]. Every day, the [NOUN] would [VERB] around the [PLACE].\",
+                        blanks: [\"ADJECTIVE\", \"NOUN\", \"VERB\", \"NOUN\", \"VERB\", \"PLACE\"]
+                    },
+                    {
+                        title: \"The Magic Forest\",
+                        text: \"In a [ADJECTIVE] forest, there was a [NOUN] that could [VERB]. One day, a [NOUN] came and [VERB] with the [NOUN] near the [PLACE].\",
+                        blanks: [\"ADJECTIVE\", \"NOUN\", \"VERB\", \"NOUN\", \"VERB\", \"NOUN\", \"PLACE\"]
+                    },
+                    {
+                        title: \"The Great Journey\",
+                        text: \"A [ADJECTIVE] [NOUN] decided to [VERB] on a journey. Along the way, they met a [NOUN] who could [VERB]. Together, they explored the [PLACE].\",
+                        blanks: [\"ADJECTIVE\", \"NOUN\", \"VERB\", \"NOUN\", \"VERB\", \"PLACE\"]
+                    }
+                ];
+                
+                // Word banks for different categories
+                this.wordBanks = {
+                    \"ADJECTIVE\": [\"magical\", \"mysterious\", \"enchanting\", \"wonderful\", \"fantastic\", \"amazing\", \"incredible\", \"beautiful\", \"strange\", \"exciting\"],
+                    \"NOUN\": [\"dragon\", \"wizard\", \"princess\", \"knight\", \"castle\", \"forest\", \"unicorn\", \"fairy\", \"kingdom\", \"treasure\"],
+                    \"VERB\": [\"fly\", \"dance\", \"sing\", \"explore\", \"discover\", \"travel\", \"adventure\", \"magic\", \"transform\", \"befriend\"],
+                    \"PLACE\": [\"mountain\", \"ocean\", \"desert\", \"valley\", \"cave\", \"garden\", \"village\", \"city\", \"island\", \"waterfall\"]
+                };
+                
+                this.currentStory = this.storyTemplates[0];
+                
+                this.initGame();
+                this.addEventListeners();
+            }
+            
+            initGame() {
+                this.storyWords = {};
+                this.updateUI();
+                this.displayStory();
+                this.generateWordOptions();
+            }
+            
+            displayStory() {
+                document.getElementById('story-title').textContent = this.currentStory.title;
+                document.getElementById('story-text').innerHTML = this.formatStoryText();
+                
+                // Add click events to blanks
+                document.querySelectorAll('.highlight').forEach(blank => {
+                    blank.addEventListener('click', () => {
+                        this.selectBlank(blank);
+                    });
+                });
+            }
+            
+            formatStoryText() {
+                let text = this.currentStory.text;
+                this.currentStory.blanks.forEach((blank, index) => {
+                    const blankId = `blank${index + 1}`;
+                    const word = this.storyWords[blankId] || `[${blank}]`;
+                    text = text.replace(`[${blank}]`, `<span class=\"highlight\" id=\"${blankId}\">${word}</span>`);
+                });
+                return text;
+            }
+            
+            selectBlank(blankElement) {
+                // Remove selection from all blanks
+                document.querySelectorAll('.highlight').forEach(blank => {
+                    blank.style.border = '2px dashed #6e8efb';
+                    blank.style.backgroundColor = '#fff9c4';
+                });
+                
+                // Select the clicked blank
+                blankElement.style.border = '2px solid #4CAF50';
+                blankElement.style.backgroundColor = '#c8e6c9';
+                
+                this.currentBlank = blankElement.id;
+                this.generateWordOptions();
+            }
+            
+            generateWordOptions() {
+                const optionsContainer = document.getElementById('word-options');
+                optionsContainer.innerHTML = '';
+                
+                if (!this.currentBlank) return;
+                
+                // Get the blank type from the original story
+                const blankIndex = parseInt(this.currentBlank.replace('blank', '')) - 1;
+                const blankType = this.currentStory.blanks[blankIndex];
+                
+                // Get words for this type
+                const words = this.wordBanks[blankType] || [];
+                
+                // Create option elements
+                words.forEach(word => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'word-option';
+                    optionElement.textContent = word;
+                    optionElement.addEventListener('click', () => {
+                        this.selectWord(optionElement, word);
+                    });
+                    optionsContainer.appendChild(optionElement);
+                });
+            }
+            
+            selectWord(optionElement, word) {
+                if (!this.currentBlank) return;
+                
+                // Store the selected word
+                this.storyWords[this.currentBlank] = word;
+                
+                // Update the story display
+                document.getElementById(this.currentBlank).textContent = word;
+                
+                // Highlight selected word
+                document.querySelectorAll('.word-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                optionElement.classList.add('selected');
+                
+                // Update score
+                this.score += 5;
+                this.updateUI();
+            }
+            
+            checkStory() {
+                // Check if all blanks are filled
+                const allFilled = this.currentStory.blanks.every((blank, index) => {
+                    const blankId = `blank${index + 1}`;
+                    return this.storyWords[blankId];
+                });
+                
+                if (!allFilled) {
+                    document.getElementById('message').innerHTML = 
+                        '<span style=\"color: #f44336;\">Please fill in all the blanks before checking your story!</span>';
+                    return;
+                }
+                
+                // Complete the story
+                this.completeStory();
+            }
+            
+            completeStory() {
+                // Generate the completed story text
+                let completedText = this.currentStory.text;
+                this.currentStory.blanks.forEach((blank, index) => {
+                    const blankId = `blank${index + 1}`;
+                    const word = this.storyWords[blankId] || `[${blank}]`;
+                    completedText = completedText.replace(`[${blank}]`, word);
+                });
+                
+                // Display the completed story
+                document.getElementById('completed-story').textContent = completedText;
+                document.querySelector('.story-area').style.display = 'none';
+                document.querySelector('.word-bank').style.display = 'none';
+                document.querySelector('.controls').style.display = 'none';
+                document.getElementById('story-display').style.display = 'block';
+                
+                // Update score and creativity
+                this.score += 50;
+                this.creativity += 10;
+                this.storiesCompleted++;
+                this.updateUI();
+                
+                document.getElementById('message').innerHTML = 
+                    '<span class=\"success\">Great story! You\\'ve completed a story!</span>';
+            }
+            
+            newStory() {
+                // Select a random new story
+                const randomIndex = Math.floor(Math.random() * this.storyTemplates.length);
+                this.currentStory = this.storyTemplates[randomIndex];
+                
+                // Reset and display new story
+                this.initGame();
+                
+                // Show story builder interface
+                document.querySelector('.story-area').style.display = 'block';
+                document.querySelector('.word-bank').style.display = 'block';
+                document.querySelector('.controls').style.display = 'flex';
+                document.getElementById('story-display').style.display = 'none';
+                
+                document.getElementById('message').textContent = \"Create amazing stories by choosing the right words!\";
+            }
+            
+            readStory() {
+                // Check if all blanks are filled
+                const allFilled = this.currentStory.blanks.every((blank, index) => {
+                    const blankId = `blank${index + 1}`;
+                    return this.storyWords[blankId];
+                });
+                
+                if (!allFilled) {
+                    document.getElementById('message').innerHTML = 
+                        '<span style=\"color: #f44336;\">Please fill in all the blanks before reading your story!</span>';
+                    return;
+                }
+                
+                // Complete and display the story
+                this.completeStory();
+            }
+            
+            backToBuilder() {
+                // Show story builder interface
+                document.querySelector('.story-area').style.display = 'block';
+                document.querySelector('.word-bank').style.display = 'block';
+                document.querySelector('.controls').style.display = 'flex';
+                document.getElementById('story-display').style.display = 'none';
+                
+                document.getElementById('message').textContent = \"Create amazing stories by choosing the right words!\";
+            }
+            
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('creativity').textContent = this.creativity;
+                document.getElementById('stories-completed').textContent = this.storiesCompleted;
+            }
+            
+            addEventListeners() {
+                document.getElementById('check-story').addEventListener('click', () => {
+                    this.checkStory();
+                });
+                
+                document.getElementById('new-story').addEventListener('click', () => {
+                    this.newStory();
+                });
+                
+                document.getElementById('read-story').addEventListener('click', () => {
+                    this.readStory();
+                });
+                
+                document.getElementById('back-to-builder').addEventListener('click', () => {
+                    this.backToBuilder();
+                });
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new StoryBuilderGame();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Master</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .info-item {
+            text-align: center;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #6e8efb;
+        }
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        @media (max-width: 600px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .card.flipped {
+            background: white;
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            cursor: default;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .message {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .timer {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #6e8efb;
+            margin: 20px 0;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #6e8efb;
+            margin-top: 0;
+        }
+        .level-indicator {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 15px 0;
+            color: #6e8efb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Memory Master</h1>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Level</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Moves</div>
+                <div class="info-value" id="moves">0</div>
+            </div>
+        </div>
+        
+        <div class="level-indicator">Level <span id="level-display">1</span>: Match the pairs!</div>
+        
+        <div class="timer">Time: <span id="time">60</span>s</div>
+        
+        <div class="message" id="message">Memorize the cards before they flip back!</div>
+        
+        <div class="memory-grid" id="memory-grid">
+            <!-- Cards will be generated by JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="start-game">Start Game</button>
+            <button class="btn" id="new-game">New Game</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <p>1. Click "Start Game" to begin</p>
+            <p>2. Memorize the cards when they briefly flip over</p>
+            <p>3. After they flip back, match pairs by clicking on cards</p>
+            <p>4. Complete the level before time runs out!</p>
+        </div>
+    </div>
+
+    <script>
+        // Memory Master game implementation
+        class MemoryGame {
+            constructor() {
+                this.score = 0;
+                this.level = 1;
+                this.moves = 0;
+                this.timeLeft = 60;
+                this.timer = null;
+                this.gameStarted = false;
+                this.gameOver = false;
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.totalPairs = 0;
+                this.lockBoard = false;
+                
+                // Card pairs for different levels
+                this.cardPairs = [
+                    // Level 1: 4 pairs (2x4 grid)
+                    ["😺", "🐶", "🦊", "🐻"],
+                    // Level 2: 6 pairs (3x4 grid)
+                    ["😺", "🐶", "🦊", "🐻", "🐼", "🦁"],
+                    // Level 3: 8 pairs (4x4 grid)
+                    ["😺", "🐶", "🦊", "🐻", "🐼", "🦁", "🐯", "🦄"]
+                ];
+                
+                this.initGame();
+                this.addEventListeners();
+            }
+            
+            initGame() {
+                this.moves = 0;
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.gameOver = false;
+                this.lockBoard = false;
+                
+                // Set total pairs based on level
+                const levelIndex = Math.min(this.level - 1, 2);
+                this.totalPairs = this.cardPairs[levelIndex].length;
+                
+                this.updateUI();
+                this.generateCards();
+            }
+            
+            generateCards() {
+                const grid = document.getElementById('memory-grid');
+                grid.innerHTML = '';
+                
+                // Set grid columns based on level
+                if (this.level === 1) {
+                    grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+                } else if (this.level === 2) {
+                    grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+                } else {
+                    grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+                }
+                
+                // Create pairs array
+                const levelIndex = Math.min(this.level - 1, 2);
+                const pairs = this.cardPairs[levelIndex];
+                let gameCards = [];
+                
+                pairs.forEach(pair => {
+                    gameCards.push(pair);
+                    gameCards.push(pair);
+                });
+                
+                // Shuffle cards
+                gameCards = this.shuffleArray(gameCards);
+                
+                // Create card elements
+                gameCards.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'card';
+                    cardElement.dataset.card = card;
+                    cardElement.dataset.index = index;
+                    cardElement.textContent = '?';
+                    
+                    cardElement.addEventListener('click', () => this.flipCard(cardElement));
+                    grid.appendChild(cardElement);
+                });
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            startGame() {
+                if (this.gameStarted) return;
+                
+                this.gameStarted = true;
+                document.getElementById('message').textContent = "Memorize the cards!";
+                
+                // Show all cards temporarily
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.textContent = card.dataset.card;
+                    card.classList.add('flipped');
+                });
+                
+                // After 3 seconds, flip cards back
+                setTimeout(() => {
+                    cards.forEach(card => {
+                        card.textContent = '?';
+                        card.classList.remove('flipped');
+                    });
+                    
+                    document.getElementById('message').textContent = "Find matching pairs!";
+                    this.startTimer();
+                }, 3000);
+            }
+            
+            startTimer() {
+                // Set time based on level
+                this.timeLeft = 60 - (this.level - 1) * 10;
+                if (this.timeLeft < 30) this.timeLeft = 30;
+                
+                this.updateUI();
+                
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateUI();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endGame(false);
+                    }
+                }, 1000);
+            }
+            
+            flipCard(card) {
+                if (this.lockBoard) return;
+                if (!this.gameStarted) return;
+                if (this.gameOver) return;
+                if (card.classList.contains('flipped')) return;
+                if (card.classList.contains('matched')) return;
+                if (this.flippedCards.length === 2) return;
+                
+                card.textContent = card.dataset.card;
+                card.classList.add('flipped');
+                this.flippedCards.push(card);
+                
+                if (this.flippedCards.length === 2) {
+                    this.lockBoard = true;
+                    this.moves++;
+                    this.updateUI();
+                    this.checkForMatch();
+                }
+            }
+            
+            checkForMatch() {
+                const [card1, card2] = this.flippedCards;
+                const isMatch = card1.dataset.card === card2.dataset.card;
+                
+                if (isMatch) {
+                    this.handleMatch();
+                } else {
+                    this.handleMismatch();
+                }
+            }
+            
+            handleMatch() {
+                this.matchedPairs++;
+                
+                this.flippedCards.forEach(card => {
+                    card.classList.add('matched');
+                });
+                
+                // Add score
+                this.score += 10 * this.level;
+                this.updateUI();
+                
+                // Check for level completion
+                if (this.matchedPairs === this.totalPairs) {
+                    this.endGame(true);
+                    return;
+                }
+                
+                this.flippedCards = [];
+                this.lockBoard = false;
+            }
+            
+            handleMismatch() {
+                setTimeout(() => {
+                    this.flippedCards.forEach(card => {
+                        card.textContent = '?';
+                        card.classList.remove('flipped');
+                    });
+                    this.flippedCards = [];
+                    this.lockBoard = false;
+                }, 1000);
+            }
+            
+            endGame(success) {
+                this.gameOver = true;
+                clearInterval(this.timer);
+                
+                if (success) {
+                    this.score += this.timeLeft * 2;
+                    document.getElementById('message').innerHTML = 
+                        `<span class="success">Level complete! +${this.timeLeft * 2} bonus points</span>`;
+                    
+                    // Move to next level after delay
+                    setTimeout(() => {
+                        this.nextLevel();
+                    }, 2000);
+                } else {
+                    document.getElementById('message').innerHTML = 
+                        '<span style="color: #f44336;">Time\'s up! Game over.</span>';
+                }
+                
+                this.updateUI();
+            }
+            
+            nextLevel() {
+                if (this.level < 3) {
+                    this.level++;
+                    this.gameStarted = false;
+                    this.initGame();
+                    document.getElementById('message').textContent = "Get ready for the next level!";
+                } else {
+                    document.getElementById('message').innerHTML = 
+                        '<span class="success">Congratulations! You\'ve completed all levels!</span>';
+                }
+            }
+            
+            newGame() {
+                clearInterval(this.timer);
+                this.gameStarted = false;
+                this.level = 1;
+                this.score = 0;
+                this.initGame();
+                document.getElementById('message').textContent = "Memorize the cards before they flip back!";
+            }
+            
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('level-display').textContent = this.level;
+                document.getElementById('moves').textContent = this.moves;
+                document.getElementById('time').textContent = this.timeLeft;
+            }
+            
+            addEventListeners() {
+                document.getElementById('start-game').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                document.getElementById('new-game').addEventListener('click', () => {
+                    this.newGame();
+                });
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new MemoryGame();
+        };
+    </script>
+</body>
+</html>

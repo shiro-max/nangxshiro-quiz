@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentence Builder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 15px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: #f0f8ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .info-item {
+            text-align: center;
+            flex: 1;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #6e8efb;
+            font-size: 0.9rem;
+        }
+        .info-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .sentence-area {
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .word-slot {
+            min-width: 60px;
+            min-height: 40px;
+            border: 2px dashed #6e8efb;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            padding: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .word-slot.filled {
+            border: 2px solid #4CAF50;
+            background-color: #c8e6c9;
+        }
+        .words-bank {
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .words-bank h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .words-bank p {
+            font-size: 0.95rem;
+            margin: 5px 0 10px 0;
+        }
+        .words-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .word-token {
+            background: linear-gradient(to bottom, #6e8efb, #a777e3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+        }
+        .word-token:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .word-token.dragging {
+            opacity: 0.5;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .message {
+            text-align: center;
+            font-size: 1.1rem;
+            margin: 15px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .instructions h3 {
+            color: #6e8efb;
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .instructions p {
+            font-size: 0.95rem;
+        }
+        .sentence-display {
+            font-size: 1.3rem;
+            text-align: center;
+            margin: 15px 0;
+            min-height: 50px;
+            font-weight: bold;
+            color: #6e8efb;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .sentence-area {
+                padding: 12px;
+                min-height: 70px;
+            }
+            .word-slot {
+                min-width: 50px;
+                min-height: 35px;
+                font-size: 0.8rem;
+                padding: 6px;
+            }
+            .word-token {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            .game-info {
+                padding: 10px;
+            }
+            .info-label {
+                font-size: 0.8rem;
+            }
+            .info-value {
+                font-size: 1.1rem;
+            }
+            .sentence-display {
+                font-size: 1.1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 0.8rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .sentence-area {
+                padding: 10px;
+                min-height: 60px;
+                gap: 6px;
+            }
+            .word-slot {
+                min-width: 45px;
+                min-height: 30px;
+                font-size: 0.7rem;
+                padding: 5px;
+            }
+            .word-token {
+                padding: 5px 8px;
+                font-size: 0.7rem;
+            }
+            .controls {
+                gap: 10px;
+            }
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            .message {
+                font-size: 0.9rem;
+            }
+            .instructions {
+                padding: 10px;
+            }
+            .instructions h3 {
+                font-size: 1rem;
+            }
+            .instructions p {
+                font-size: 0.85rem;
+            }
+            .sentence-display {
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            .word-slot {
+                min-width: 40px;
+                min-height: 25px;
+                font-size: 0.6rem;
+            }
+            .word-token {
+                padding: 4px 6px;
+                font-size: 0.6rem;
+            }
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sentence Builder</h1>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Level</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Completed</div>
+                <div class="info-value" id="completed">0/5</div>
+            </div>
+        </div>
+        
+        <div class="message" id="message">Build the sentence by dragging words to the correct positions!</div>
+        
+        <div class="sentence-display" id="sentence-display"></div>
+        
+        <div class="sentence-area" id="sentence-area">
+            <!-- Word slots will be generated by JavaScript -->
+        </div>
+        
+        <div class="words-bank">
+            <h3>Word Bank</h3>
+            <p>Drag words from here to build the sentence</p>
+            <div class="words-container" id="words-container">
+                <!-- Words will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="check-sentence">Check Sentence</button>
+            <button class="btn" id="new-sentence">New Sentence</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <p>Drag words from the word bank to the sentence area to build the correct sentence.</p>
+            <p>When you think you've built the correct sentence, click "Check Sentence".</p>
+        </div>
+    </div>
+
+    <script>
+        // Sentence Builder game implementation
+        class SentenceBuilderGame {
+            constructor() {
+                this.score = 0;
+                this.level = 1;
+                this.completed = 0;
+                this.totalSentences = 5;
+                this.currentSentence = null;
+                this.draggedWord = null;
+                
+                // Sentences for different levels
+                this.sentences = [
+                    // Level 1
+                    [
+                        { sentence: "The cat is sleeping", words: ["The", "cat", "is", "sleeping"] },
+                        { sentence: "I like to read books", words: ["I", "like", "to", "read", "books"] },
+                        { sentence: "She is my friend", words: ["She", "is", "my", "friend"] },
+                        { sentence: "We go to school", words: ["We", "go", "to", "school"] },
+                        { sentence: "He plays football", words: ["He", "plays", "football"] }
+                    ],
+                    // Level 2
+                    [
+                        { sentence: "The big dog runs fast", words: ["The", "big", "dog", "runs", "fast"] },
+                        { sentence: "I want to eat pizza", words: ["I", "want", "to", "eat", "pizza"] },
+                        { sentence: "She has a red car", words: ["She", "has", "a", "red", "car"] },
+                        { sentence: "They are playing games", words: ["They", "are", "playing", "games"] },
+                        { sentence: "We went to the park", words: ["We", "went", "to", "the", "park"] }
+                    ],
+                    // Level 3
+                    [
+                        { sentence: "The quick brown fox jumps over the lazy dog", words: ["The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog"] },
+                        { sentence: "She is reading an interesting book", words: ["She", "is", "reading", "an", "interesting", "book"] },
+                        { sentence: "They will go to the beach tomorrow", words: ["They", "will", "go", "to", "the", "beach", "tomorrow"] },
+                        { sentence: "I have finished my homework", words: ["I", "have", "finished", "my", "homework"] },
+                        { sentence: "The children are playing in the garden", words: ["The", "children", "are", "playing", "in", "the", "garden"] }
+                    ]
+                ];
+                
+                this.initGame();
+                this.addEventListeners();
+            }
+            
+            initGame() {
+                this.completed = 0;
+                this.updateUI();
+                this.generateSentence();
+            }
+            
+            generateSentence() {
+                // Get sentences for current level (max level 3)
+                const levelIndex = Math.min(this.level - 1, 2);
+                const levelSentences = this.sentences[levelIndex];
+                
+                // Select a random sentence
+                this.currentSentence = levelSentences[Math.floor(Math.random() * levelSentences.length)];
+                
+                // Display the sentence to build
+                document.getElementById('sentence-display').textContent = this.currentSentence.sentence;
+                
+                // Create word slots
+                const sentenceArea = document.getElementById('sentence-area');
+                sentenceArea.innerHTML = '';
+                
+                this.currentSentence.words.forEach((word, index) => {
+                    const slot = document.createElement('div');
+                    slot.className = 'word-slot';
+                    slot.dataset.index = index;
+                    slot.textContent = '?';
+                    sentenceArea.appendChild(slot);
+                });
+                
+                // Create word bank (shuffled words)
+                const wordsContainer = document.getElementById('words-container');
+                wordsContainer.innerHTML = '';
+                
+                // Shuffle words
+                const shuffledWords = this.shuffleArray([...this.currentSentence.words]);
+                
+                shuffledWords.forEach(word => {
+                    const wordToken = document.createElement('div');
+                    wordToken.className = 'word-token';
+                    wordToken.textContent = word;
+                    wordToken.draggable = true;
+                    wordsContainer.appendChild(wordToken);
+                });
+                
+                // Add event listeners for drag and drop
+                this.addDragListeners();
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            addDragListeners() {
+                // Word tokens (draggable)
+                document.querySelectorAll('.word-token').forEach(token => {
+                    token.addEventListener('dragstart', (e) => {
+                        this.draggedWord = e.target;
+                        e.target.classList.add('dragging');
+                    });
+                    
+                    token.addEventListener('dragend', (e) => {
+                        e.target.classList.remove('dragging');
+                        this.draggedWord = null;
+                    });
+                });
+                
+                // Word slots (drop targets)
+                document.querySelectorAll('.word-slot').forEach(slot => {
+                    slot.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        slot.style.backgroundColor = '#bbdefb';
+                    });
+                    
+                    slot.addEventListener('dragleave', () => {
+                        slot.style.backgroundColor = '';
+                    });
+                    
+                    slot.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        slot.style.backgroundColor = '';
+                        
+                        if (this.draggedWord) {
+                            // If slot already has a word, return it to the bank
+                            if (slot.classList.contains('filled')) {
+                                const existingWord = slot.textContent;
+                                slot.textContent = '?';
+                                slot.classList.remove('filled');
+                                
+                                // Add word back to bank
+                                const wordsContainer = document.getElementById('words-container');
+                                const wordToken = document.createElement('div');
+                                wordToken.className = 'word-token';
+                                wordToken.textContent = existingWord;
+                                wordToken.draggable = true;
+                                wordsContainer.appendChild(wordToken);
+                                this.addDragListeners();
+                            }
+                            
+                            // Place new word in slot
+                            slot.textContent = this.draggedWord.textContent;
+                            slot.classList.add('filled');
+                            
+                            // Remove word from bank
+                            this.draggedWord.remove();
+                        }
+                    });
+                });
+            }
+            
+            checkSentence() {
+                const slots = document.querySelectorAll('.word-slot');
+                let userSentence = '';
+                
+                slots.forEach((slot, index) => {
+                    if (slot.classList.contains('filled')) {
+                        if (index > 0) userSentence += ' ';
+                        userSentence += slot.textContent;
+                    }
+                });
+                
+                if (userSentence === this.currentSentence.sentence) {
+                    this.score += 10 * this.level;
+                    this.completed++;
+                    this.updateUI();
+                    
+                    document.getElementById('message').innerHTML = 
+                        `<span class="success">Correct! Well done!</span>`;
+                    
+                    // Check if level is complete
+                    if (this.completed >= this.totalSentences) {
+                        this.levelUp();
+                    } else {
+                        // Generate new sentence after delay
+                        setTimeout(() => {
+                            this.generateSentence();
+                            document.getElementById('message').textContent = "Build the sentence by dragging words to the correct positions!";
+                        }, 2000);
+                    }
+                } else {
+                    document.getElementById('message').innerHTML = 
+                        `<span class="error">Incorrect. Try again!</span>`;
+                }
+            }
+            
+            levelUp() {
+                if (this.level < 3) {
+                    this.level++;
+                    this.completed = 0;
+                    this.updateUI();
+                    
+                    document.getElementById('message').innerHTML = 
+                        `<span class="success">Level ${this.level - 1} complete! Moving to Level ${this.level}!</span>`;
+                    
+                    // Generate new sentence after delay
+                    setTimeout(() => {
+                        this.generateSentence();
+                        document.getElementById('message').textContent = "Build the sentence by dragging words to the correct positions!";
+                    }, 2000);
+                } else {
+                    document.getElementById('message').innerHTML = 
+                        `<span class="success">Congratulations! You've completed all levels!</span>`;
+                }
+            }
+            
+            newSentence() {
+                this.generateSentence();
+                document.getElementById('message').textContent = "Build the sentence by dragging words to the correct positions!";
+            }
+            
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('completed').textContent = `${this.completed}/${this.totalSentences}`;
+            }
+            
+            addEventListeners() {
+                document.getElementById('check-sentence').addEventListener('click', () => {
+                    this.checkSentence();
+                });
+                
+                document.getElementById('new-sentence').addEventListener('click', () => {
+                    this.newSentence();
+                });
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new SentenceBuilderGame();
+        };
+    </script>
+</body>
+</html>

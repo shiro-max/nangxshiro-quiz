@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrabble Master</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 15px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        .game-setup {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .game-setup h2 {
+            text-align: center;
+            margin: 0 0 10px 0;
+            font-size: 1.3rem;
+        }
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .difficulty-btn {
+            padding: 8px 15px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+        }
+        .difficulty-btn.active {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: #f0f8ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .info-item {
+            text-align: center;
+            flex: 1;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #6e8efb;
+            font-size: 0.9rem;
+        }
+        .info-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 1px;
+            background-color: #6e8efb;
+            padding: 3px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        .board-cell {
+            aspect-ratio: 1;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            min-width: 20px;
+            min-height: 20px;
+        }
+        .board-cell.word-multiplier-2 {
+            background-color: #ffcdd2;
+        }
+        .board-cell.word-multiplier-3 {
+            background-color: #f8bbd0;
+        }
+        .board-cell.letter-multiplier-2 {
+            background-color: #c8e6c9;
+        }
+        .board-cell.letter-multiplier-3 {
+            background-color: #b2dfdb;
+        }
+        .board-cell.center {
+            background-color: #ffeb3b;
+        }
+        .board-cell .multiplier {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            font-size: 0.4rem;
+            color: #333;
+        }
+        .rack {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            min-height: 60px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tile {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(to bottom, #6e8efb, #a777e3);
+            color: white;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            cursor: grab;
+            user-select: none;
+        }
+        .tile .points {
+            font-size: 0.6rem;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .played-word {
+            background-color: #e3f2fd;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+        .word-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        .word-list h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+        .dragging {
+            opacity: 0.5;
+        }
+        .drop-target {
+            background-color: #bbdefb !important;
+        }
+        .player-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            background: #f0f8ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .player-card {
+            text-align: center;
+            padding: 8px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            flex: 1;
+            margin: 0 5px;
+        }
+        .player-card.active {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+        }
+        .player-name {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .player-score {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .bot-thinking {
+            text-align: center;
+            font-style: italic;
+            color: #6e8efb;
+            margin: 10px 0;
+            height: 20px;
+            font-size: 0.9rem;
+        }
+        .message {
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+            min-height: 20px;
+            font-size: 0.9rem;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .board {
+                gap: 1px;
+                padding: 2px;
+            }
+            .board-cell {
+                min-width: 15px;
+                min-height: 15px;
+            }
+            .board-cell .multiplier {
+                font-size: 0.3rem;
+            }
+            .tile {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            .tile .points {
+                font-size: 0.5rem;
+            }
+            .difficulty-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            .info-value {
+                font-size: 1.1rem;
+            }
+            .player-name {
+                font-size: 0.9rem;
+            }
+            .player-score {
+                font-size: 1.1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 0.8rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .game-setup {
+                padding: 10px;
+            }
+            .game-setup h2 {
+                font-size: 1.1rem;
+            }
+            .difficulty-selector {
+                gap: 5px;
+            }
+            .difficulty-btn {
+                padding: 5px 10px;
+                font-size: 0.7rem;
+            }
+            .game-info {
+                padding: 8px;
+            }
+            .info-label {
+                font-size: 0.7rem;
+            }
+            .info-value {
+                font-size: 1rem;
+            }
+            .board {
+                gap: 0.5px;
+                padding: 1px;
+            }
+            .board-cell {
+                min-width: 12px;
+                min-height: 12px;
+            }
+            .board-cell .multiplier {
+                font-size: 0.25rem;
+            }
+            .tile {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+            .tile .points {
+                font-size: 0.4rem;
+            }
+            .rack {
+                gap: 5px;
+                min-height: 50px;
+            }
+            .controls {
+                gap: 8px;
+            }
+            .btn {
+                padding: 6px 10px;
+                font-size: 0.7rem;
+            }
+            .player-info {
+                padding: 8px;
+            }
+            .player-card {
+                padding: 5px;
+                margin: 0 3px;
+            }
+            .player-name {
+                font-size: 0.8rem;
+            }
+            .player-score {
+                font-size: 0.9rem;
+            }
+            .word-list {
+                max-height: 120px;
+            }
+        }
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            .difficulty-btn {
+                padding: 4px 8px;
+                font-size: 0.6rem;
+            }
+            .board-cell {
+                min-width: 10px;
+                min-height: 10px;
+            }
+            .tile {
+                width: 25px;
+                height: 25px;
+                font-size: 0.8rem;
+            }
+            .btn {
+                padding: 5px 8px;
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scrabble Master</h1>
+        
+        <div class="game-setup">
+            <h2>Select Difficulty</h2>
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">Easy Bot</button>
+                <button class="difficulty-btn" data-difficulty="normal">Normal Bot</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard Bot</button>
+                <button class="difficulty-btn" data-difficulty="pro">Pro Bot</button>
+            </div>
+        </div>
+        
+        <div class="player-info">
+            <div class="player-card active" id="player-card">
+                <div class="player-name">Player</div>
+                <div class="player-score" id="player-score">0</div>
+                <div>Tiles: <span id="player-tiles">7</span></div>
+            </div>
+            <div class="player-card" id="bot-card">
+                <div class="player-name" id="bot-name">Easy Bot</div>
+                <div class="player-score" id="bot-score">0</div>
+                <div>Tiles: <span id="bot-tiles">7</span></div>
+            </div>
+        </div>
+        
+        <div class="message" id="message"></div>
+        <div class="bot-thinking" id="bot-thinking"></div>
+        
+        <div class="board" id="scrabble-board">
+            <!-- Board will be generated by JavaScript -->
+        </div>
+        
+        <div class="rack" id="player-rack">
+            <!-- Player tiles will be generated by JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="play-word">Play Word</button>
+            <button class="btn" id="reset-word">Reset</button>
+            <button class="btn" id="pass-turn">Pass Turn</button>
+            <button class="btn" id="new-game">New Game</button>
+        </div>
+        
+        <div class="word-list">
+            <h3>Played Words:</h3>
+            <div id="played-words"></div>
+        </div>
+    </div>
+
+    <script>
+        // Scrabble game implementation with bot opponents
+        class ScrabbleGame {
+            constructor() {
+                this.difficulty = 'easy'; // easy, normal, hard, pro
+                this.playerScore = 0;
+                this.botScore = 0;
+                this.currentPlayer = 'player'; // player or bot
+                this.board = Array(15).fill().map(() => Array(15).fill(null));
+                this.playerRack = [];
+                this.botRack = [];
+                this.playedWords = [];
+                this.draggedTile = null;
+                this.gameOver = false;
+                this.firstMove = true;
+                
+                // Letter distribution (Scrabble standard)
+                this.letterDistribution = {
+                    'A': 9, 'B': 2, 'C': 2, 'D': 4, 'E': 12, 'F': 2, 'G': 3, 'H': 2, 'I': 9,
+                    'J': 1, 'K': 1, 'L': 4, 'M': 2, 'N': 6, 'O': 8, 'P': 2, 'Q': 1, 'R': 6,
+                    'S': 4, 'T': 6, 'U': 4, 'V': 2, 'W': 2, 'X': 1, 'Y': 2, 'Z': 1, ' ': 2
+                };
+                
+                // Letter points
+                this.letterPoints = {
+                    'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1,
+                    'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 'Q': 10, 'R': 1,
+                    'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10, ' ': 0
+                };
+                
+                // Special cells
+                this.specialCells = {
+                    // Word multipliers
+                    'word-multiplier-2': [[1,1],[1,13],[2,2],[2,12],[3,3],[3,11],[4,4],[4,10],[7,7],[10,4],[10,10],[11,3],[11,11],[12,2],[12,12],[13,1],[13,13]],
+                    'word-multiplier-3': [[0,0],[0,7],[0,14],[7,0],[7,14],[14,0],[14,7],[14,14]],
+                    // Letter multipliers
+                    'letter-multiplier-2': [[0,3],[0,11],[2,6],[2,8],[3,0],[3,7],[3,14],[6,2],[6,6],[6,8],[6,12],[7,3],[7,11],[8,2],[8,6],[8,8],[8,12],[11,0],[11,7],[11,14],[12,6],[12,8],[14,3],[14,11]],
+                    'letter-multiplier-3': [[1,5],[1,9],[5,1],[5,5],[5,9],[5,13],[9,1],[9,5],[9,9],[9,13],[13,5],[13,9]],
+                    // Center
+                    'center': [[7,7]]
+                };
+                
+                // Valid words dictionary (simplified for demo)
+                this.validWords = new Set([
+                    "CAT", "DOG", "SUN", "MOON", "STAR", "BOOK", "FISH", "BIRD", "TREE", "FROG",
+                    "HOUSE", "APPLE", "CHAIR", "WATER", "FRIEND", "MUSIC", "DANCE", "SMILE", "LAUGH",
+                    "HAPPY", "SAD", "ANGRY", "EXCITED", "QUIET", "LOUD", "FAST", "SLOW", "BIG", "SMALL",
+                    "RED", "BLUE", "GREEN", "YELLOW", "ORANGE", "PURPLE", "PINK", "BLACK", "WHITE", "BROWN",
+                    "CAR", "BUS", "TRAIN", "PLANE", "BOAT", "BIKE", "WALK", "RUN", "JUMP", "SWIM",
+                    "EAT", "DRINK", "SLEEP", "PLAY", "WORK", "LEARN", "TEACH", "READ", "WRITE", "DRAW",
+                    "SING", "DANCE", "COOK", "CLEAN", "HELP", "GIVE", "TAKE", "MAKE", "BUILD", "FIX",
+                    "THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS",
+                    "HOT", "SHE", "DAY", "MAY", "HAS", "HIM", "HIS", "GET", "MAN", "NEW", "NOW",
+                    "OLD", "OWN", "PUT", "SAY", "SEE", "WAY", "WHO", "BOY", "DID", "ITS", "LET",
+                    "LIT", "LOG", "LOT", "ONE", "OUR", "OUT", "PEN", "PIN", "PIT", "POT", "RAW",
+                    "RED", "RIP", "ROD", "ROW", "RUB", "RUG", "RUN", "SAD", "SET", "SIN", "SIR",
+                    "SIT", "SON", "SUP", "TAN", "TIE", "TIN", "TOE", "TON", "TOO", "TOP", "TRY",
+                    "TUG", "TWO", "USE", "VAN", "WAR", "WAX", "WET", "WIN", "WIT", "WON", "YES",
+                    "YET", "ZEN", "ZIP", "ZOO", "ABLE", "BAKE", "CAME", "DOOR", "EACH", "FACE",
+                    "GAME", "HAND", "IDEA", "JUMP", "KIND", "LATE", "MADE", "NAME", "OFTEN",
+                    "PAGE", "QUICK", "ROAD", "SALT", "TAIL", "UPON", "VERY", "WISH", "YOUR"
+                ]);
+                
+                this.initBoard();
+                this.initRacks();
+                this.addEventListeners();
+                this.updateUI();
+            }
+            
+            initBoard() {
+                const board = document.getElementById('scrabble-board');
+                board.innerHTML = '';
+                
+                for (let row = 0; row < 15; row++) {
+                    for (let col = 0; col < 15; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'board-cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        // Add special cell classes
+                        for (const [type, positions] of Object.entries(this.specialCells)) {
+                            if (positions.some(pos => pos[0] === row && pos[1] === col)) {
+                                cell.classList.add(type);
+                                // Add multiplier text
+                                if (type !== 'center') {
+                                    const multiplier = document.createElement('div');
+                                    multiplier.className = 'multiplier';
+                                    if (type.includes('word')) {
+                                        multiplier.textContent = type === 'word-multiplier-2' ? '2W' : '3W';
+                                    } else {
+                                        multiplier.textContent = type === 'letter-multiplier-2' ? '2L' : '3L';
+                                    }
+                                    cell.appendChild(multiplier);
+                                }
+                                break;
+                            }
+                        }
+                        
+                        board.appendChild(cell);
+                    }
+                }
+            }
+            
+            initRacks() {
+                this.playerRack = [];
+                this.botRack = [];
+                
+                for (let i = 0; i < 7; i++) {
+                    this.drawTile('player');
+                    this.drawTile('bot');
+                }
+                
+                this.renderRacks();
+            }
+            
+            drawTile(player) {
+                const letters = Object.keys(this.letterDistribution).filter(letter => this.letterDistribution[letter] > 0);
+                if (letters.length === 0) return null;
+                
+                const randomIndex = Math.floor(Math.random() * letters.length);
+                const letter = letters[randomIndex];
+                this.letterDistribution[letter]--;
+                
+                if (player === 'player') {
+                    this.playerRack.push(letter);
+                    document.getElementById('player-tiles').textContent = this.playerRack.length;
+                } else {
+                    this.botRack.push(letter);
+                    document.getElementById('bot-tiles').textContent = this.botRack.length;
+                }
+                
+                return letter;
+            }
+            
+            renderRacks() {
+                // Render player rack
+                const playerRack = document.getElementById('player-rack');
+                playerRack.innerHTML = '';
+                
+                this.playerRack.forEach((letter, index) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.dataset.index = index;
+                    tile.draggable = true;
+                    
+                    if (letter === ' ') {
+                        tile.innerHTML = '<div class="letter">Blank</div><div class="points">0</div>';
+                    } else {
+                        tile.innerHTML = `<div class="letter">${letter}</div><div class="points">${this.letterPoints[letter]}</div>`;
+                    }
+                    
+                    playerRack.appendChild(tile);
+                });
+                
+                // Bot rack is hidden in UI
+            }
+            
+            addEventListeners() {
+                // Tile dragging
+                document.addEventListener('dragstart', (e) => {
+                    if (e.target.classList.contains('tile') && this.currentPlayer === 'player') {
+                        this.draggedTile = e.target;
+                        e.target.classList.add('dragging');
+                    }
+                });
+                
+                document.addEventListener('dragend', (e) => {
+                    if (e.target.classList.contains('tile')) {
+                        e.target.classList.remove('dragging');
+                        this.draggedTile = null;
+                    }
+                });
+                
+                // Board cell drop targets
+                document.querySelectorAll('.board-cell').forEach(cell => {
+                    cell.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        if (this.currentPlayer === 'player') {
+                            cell.classList.add('drop-target');
+                        }
+                    });
+                    
+                    cell.addEventListener('dragleave', () => {
+                        cell.classList.remove('drop-target');
+                    });
+                    
+                    cell.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        cell.classList.remove('drop-target');
+                        
+                        if (this.draggedTile && this.currentPlayer === 'player') {
+                            const rowIndex = parseInt(cell.dataset.row);
+                            const colIndex = parseInt(cell.dataset.col);
+                            
+                            // Check if cell is empty
+                            if (cell.children.length === 0 || (cell.children.length === 1 && cell.children[0].classList.contains('multiplier'))) {
+                                // Place tile on board
+                                const tileIndex = parseInt(this.draggedTile.dataset.index);
+                                const letter = this.playerRack[tileIndex];
+                                
+                                // Create tile on board
+                                const boardTile = document.createElement('div');
+                                boardTile.className = 'tile';
+                                boardTile.dataset.letter = letter;
+                                boardTile.innerHTML = `<div class="letter">${letter}</div><div class="points">${this.letterPoints[letter]}</div>`;
+                                cell.appendChild(boardTile);
+                                
+                                // Remove from rack
+                                this.playerRack.splice(tileIndex, 1);
+                                this.renderRacks();
+                            }
+                        }
+                    });
+                });
+                
+                // Button events
+                document.getElementById('play-word').addEventListener('click', () => this.playWord());
+                document.getElementById('reset-word').addEventListener('click', () => this.resetBoard());
+                document.getElementById('pass-turn').addEventListener('click', () => this.passTurn());
+                document.getElementById('new-game').addEventListener('click', () => this.newGame());
+                
+                // Difficulty selection
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.difficulty = btn.dataset.difficulty;
+                        this.updateBotName();
+                    });
+                });
+            }
+            
+            playWord() {
+                if (this.currentPlayer !== 'player') return;
+                
+                // Get word from board
+                const wordData = this.getWordFromBoard();
+                if (!wordData) {
+                    this.showMessage("Please place at least one tile on the board.", "error");
+                    return;
+                }
+                
+                const { word, score } = wordData;
+                
+                // Validate word
+                if (!this.isValidWord(word)) {
+                    this.showMessage(`"${word}" is not a valid word.`, "error");
+                    return;
+                }
+                
+                // Add to score
+                this.playerScore += score;
+                this.showMessage(`Played "${word}" for ${score} points!`, "success");
+                
+                // Add to played words
+                const playedWord = document.createElement('div');
+                playedWord.className = 'played-word';
+                playedWord.textContent = `Player: ${word} - ${score} points`;
+                document.getElementById('played-words').appendChild(playedWord);
+                
+                // Draw new tiles
+                const tilesNeeded = 7 - this.playerRack.length;
+                for (let i = 0; i < tilesNeeded; i++) {
+                    this.drawTile('player');
+                }
+                this.renderRacks();
+                
+                // Clear message after delay
+                setTimeout(() => {
+                    this.clearMessage();
+                }, 2000);
+                
+                // Switch to bot turn
+                this.currentPlayer = 'bot';
+                this.firstMove = false;
+                this.updateUI();
+                this.botTurn();
+            }
+            
+            getWordFromBoard() {
+                // Find all tiles on the board
+                const tiles = [];
+                document.querySelectorAll('.board-cell .tile').forEach(tile => {
+                    const cell = tile.parentElement;
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    const letter = tile.dataset.letter;
+                    tiles.push({ row, col, letter });
+                });
+                
+                if (tiles.length === 0) return null;
+                
+                // For simplicity, we'll just get the first horizontal word
+                // Sort by row then column
+                tiles.sort((a, b) => {
+                    if (a.row !== b.row) return a.row - b.row;
+                    return a.col - b.col;
+                });
+                
+                // Get the first row with tiles
+                const firstRow = tiles[0].row;
+                const rowTiles = tiles.filter(tile => tile.row === firstRow);
+                
+                // Sort by column
+                rowTiles.sort((a, b) => a.col - b.col);
+                
+                // Create word
+                let word = '';
+                let score = 0;
+                
+                for (const tile of rowTiles) {
+                    word += tile.letter;
+                    score += this.letterPoints[tile.letter] || 0;
+                }
+                
+                // Apply word multipliers for center tile if it's the first move
+                if (this.firstMove) {
+                    const centerCell = document.querySelector('.board-cell.center');
+                    if (centerCell && centerCell.children.length > 0) {
+                        if (centerCell.classList.contains('word-multiplier-2')) {
+                            score *= 2;
+                        } else if (centerCell.classList.contains('word-multiplier-3')) {
+                            score *= 3;
+                        }
+                    }
+                }
+                
+                return { word, score };
+            }
+            
+            isValidWord(word) {
+                return this.validWords.has(word.toUpperCase());
+            }
+            
+            showMessage(text, type) {
+                const messageElement = document.getElementById('message');
+                messageElement.textContent = text;
+                messageElement.className = 'message ' + type;
+            }
+            
+            clearMessage() {
+                const messageElement = document.getElementById('message');
+                messageElement.textContent = '';
+                messageElement.className = 'message';
+            }
+            
+            passTurn() {
+                if (this.currentPlayer !== 'player') return;
+                
+                this.showMessage("You passed your turn.", "success");
+                
+                // Switch to bot turn
+                this.currentPlayer = 'bot';
+                this.updateUI();
+                this.botTurn();
+            }
+            
+            botTurn() {
+                if (this.currentPlayer !== 'bot' || this.gameOver) return;
+                
+                // Show bot thinking message
+                const thinkingMessages = [
+                    "Bot is thinking...",
+                    "Bot is calculating the best move...",
+                    "Bot is analyzing the board...",
+                    "Bot is searching its vocabulary..."
+                ];
+                
+                const thinkingElement = document.getElementById('bot-thinking');
+                thinkingElement.textContent = thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];
+                
+                // Simulate bot thinking time based on difficulty
+                let thinkingTime = 2000; // Default 2 seconds
+                if (this.difficulty === 'normal') thinkingTime = 1500;
+                if (this.difficulty === 'hard') thinkingTime = 1000;
+                if (this.difficulty === 'pro') thinkingTime = 500;
+                
+                setTimeout(() => {
+                    // Bot makes a move
+                    this.botMakeMove();
+                    thinkingElement.textContent = "";
+                }, thinkingTime);
+            }
+            
+            botMakeMove() {
+                // Bot selects a word from vocabulary
+                const validWordsArray = Array.from(this.validWords);
+                const word = validWordsArray[Math.floor(Math.random() * validWordsArray.length)];
+                const points = this.calculatePoints(word);
+                this.botScore += points;
+                
+                // Place word on board (simplified)
+                this.placeBotWord(word);
+                
+                const playedWord = document.createElement('div');
+                playedWord.className = 'played-word';
+                playedWord.textContent = `${document.getElementById('bot-name').textContent}: ${word} - ${points} points`;
+                document.getElementById('played-words').appendChild(playedWord);
+                
+                // Draw new tiles for bot
+                const tilesNeeded = 7 - this.botRack.length;
+                for (let i = 0; i < tilesNeeded; i++) {
+                    this.drawTile('bot');
+                }
+                
+                this.showMessage(`${document.getElementById('bot-name').textContent} played "${word}" for ${points} points!`, "success");
+                
+                // Switch back to player turn
+                this.currentPlayer = 'player';
+                this.updateUI();
+                
+                // Clear message after delay
+                setTimeout(() => {
+                    this.clearMessage();
+                }, 2000);
+            }
+            
+            placeBotWord(word) {
+                // Simplified placement - just place the word in a row
+                const startRow = Math.floor(Math.random() * 15);
+                const startCol = Math.floor(Math.random() * (15 - word.length));
+                
+                for (let i = 0; i < word.length; i++) {
+                    const cell = document.querySelector(`.board-cell[data-row="${startRow}"][data-col="${startCol + i}"]`);
+                    if (cell && cell.children.length === 0) {
+                        const letter = word[i];
+                        const boardTile = document.createElement('div');
+                        boardTile.className = 'tile';
+                        boardTile.dataset.letter = letter;
+                        boardTile.innerHTML = `<div class="letter">${letter}</div><div class="points">${this.letterPoints[letter]}</div>`;
+                        cell.appendChild(boardTile);
+                    }
+                }
+            }
+            
+            calculatePoints(word) {
+                // Simplified point calculation
+                let points = 0;
+                for (let char of word) {
+                    points += this.letterPoints[char] || 0;
+                }
+                
+                // Add difficulty multiplier
+                if (this.difficulty === 'normal') points = Math.round(points * 1.2);
+                if (this.difficulty === 'hard') points = Math.round(points * 1.5);
+                if (this.difficulty === 'pro') points = Math.round(points * 2);
+                
+                return points;
+            }
+            
+            resetBoard() {
+                // Clear board
+                document.querySelectorAll('.board-cell').forEach(cell => {
+                    if (!cell.classList.contains('word-multiplier-2') && 
+                        !cell.classList.contains('word-multiplier-3') && 
+                        !cell.classList.contains('letter-multiplier-2') && 
+                        !cell.classList.contains('letter-multiplier-3') && 
+                        !cell.classList.contains('center')) {
+                        cell.innerHTML = '';
+                    } else {
+                        // Keep only multiplier elements
+                        const children = Array.from(cell.children);
+                        children.forEach(child => {
+                            if (!child.classList.contains('multiplier')) {
+                                cell.removeChild(child);
+                            }
+                        });
+                    }
+                });
+                
+                // Reset racks
+                this.initRacks();
+                this.firstMove = true;
+                this.clearMessage();
+            }
+            
+            newGame() {
+                this.playerScore = 0;
+                this.botScore = 0;
+                this.currentPlayer = 'player';
+                this.board = Array(15).fill().map(() => Array(15).fill(null));
+                this.playerRack = [];
+                this.botRack = [];
+                this.playedWords = [];
+                this.gameOver = false;
+                this.firstMove = true;
+                
+                // Reset letter distribution
+                this.letterDistribution = {
+                    'A': 9, 'B': 2, 'C': 2, 'D': 4, 'E': 12, 'F': 2, 'G': 3, 'H': 2, 'I': 9,
+                    'J': 1, 'K': 1, 'L': 4, 'M': 2, 'N': 6, 'O': 8, 'P': 2, 'Q': 1, 'R': 6,
+                    'S': 4, 'T': 6, 'U': 4, 'V': 2, 'W': 2, 'X': 1, 'Y': 2, 'Z': 1, ' ': 2
+                };
+                
+                document.getElementById('played-words').innerHTML = '';
+                
+                this.initBoard();
+                this.initRacks();
+                this.updateUI();
+                document.getElementById('bot-thinking').textContent = "";
+                this.clearMessage();
+            }
+            
+            updateUI() {
+                // Update scores
+                document.getElementById('player-score').textContent = this.playerScore;
+                document.getElementById('bot-score').textContent = this.botScore;
+                
+                // Update player cards
+                document.getElementById('player-card').classList.toggle('active', this.currentPlayer === 'player');
+                document.getElementById('bot-card').classList.toggle('active', this.currentPlayer === 'bot');
+                
+                // Update button states
+                const playBtn = document.getElementById('play-word');
+                const resetBtn = document.getElementById('reset-word');
+                const passBtn = document.getElementById('pass-turn');
+                
+                if (this.currentPlayer === 'player') {
+                    playBtn.disabled = false;
+                    resetBtn.disabled = false;
+                    passBtn.disabled = false;
+                } else {
+                    playBtn.disabled = true;
+                    resetBtn.disabled = true;
+                    passBtn.disabled = true;
+                }
+            }
+            
+            updateBotName() {
+                const names = {
+                    'easy': 'Easy Bot',
+                    'normal': 'Normal Bot',
+                    'hard': 'Hard Bot',
+                    'pro': 'Pro Bot'
+                };
+                document.getElementById('bot-name').textContent = names[this.difficulty];
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new ScrabbleGame();
+        };
+    </script>
+</body>
+</html>

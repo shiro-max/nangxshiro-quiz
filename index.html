@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning Adventure</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 0 10px;
+        }
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #f0f8ff;
+            font-size: 1.2rem;
+            margin-top: 0;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+        .game-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+            background: white;
+        }
+        .game-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #6e8efb;
+        }
+        .game-card h3 {
+            color: #6e8efb;
+            margin: 15px 0 10px;
+            font-size: 1.4rem;
+        }
+        .game-card p {
+            color: #555;
+            font-size: 0.95rem;
+            flex-grow: 1;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+            margin-top: 10px;
+            width: 80%;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            background: linear-gradient(to right, #5a7df9, #9a6ae0);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: white;
+            font-size: 0.9rem;
+            padding: 0 10px;
+        }
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            .game-card {
+                padding: 20px 15px;
+            }
+            .game-icon {
+                font-size: 2.5rem;
+            }
+            .game-card h3 {
+                font-size: 1.2rem;
+            }
+            .game-card p {
+                font-size: 0.9rem;
+            }
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+        @media (max-width: 320px) {
+            body {
+                padding: 10px;
+            }
+            .games-grid {
+                gap: 10px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>English Learning Adventure</h1>
+            <p class="subtitle">Fun Games for Kids & Adults</p>
+        </header>
+        
+        <div class="games-grid">
+            <!-- Grammar Quiz Game -->
+            <div class="game-card" onclick="location.href='quiz.html?level=1'">
+                <div class="game-icon">📝</div>
+                <h3>Grammar Quiz</h3>
+                <p>50 levels of progressive grammar challenges for all ages</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Scrabble Game -->
+            <div class="game-card" onclick="location.href='scrabble.html'">
+                <div class="game-icon">🔤</div>
+                <h3>Scrabble Master</h3>
+                <p>Create words from letter tiles and earn points</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Alphabet Drawing Game -->
+            <div class="game-card" onclick="location.href='drawing.html'">
+                <div class="game-icon">✍️</div>
+                <h3>Alphabet Artist</h3>
+                <p>Draw letters and practice spelling words</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Find the Character Game -->
+            <div class="game-card" onclick="location.href='find-character.html'">
+                <div class="game-icon">🔍</div>
+                <h3>Character Finder</h3>
+                <p>Find hidden letters in colorful scenes</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Word Match Game -->
+            <div class="game-card" onclick="location.href='word-match.html'">
+                <div class="game-icon">🔁</div>
+                <h3>Word Match</h3>
+                <p>Match words with their meanings or pictures</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Sentence Builder Game -->
+            <div class="game-card" onclick="location.href='sentence-builder.html'">
+                <div class="game-icon">🧩</div>
+                <h3>Sentence Builder</h3>
+                <p>Rearrange words to form correct sentences</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Vocabulary Builder Game -->
+            <div class="game-card" onclick="location.href='vocabulary.html'">
+                <div class="game-icon">📚</div>
+                <h3>Vocabulary Builder</h3>
+                <p>Learn new words with images and definitions</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Pronunciation Practice Game -->
+            <div class="game-card" onclick="location.href='pronunciation.html'">
+                <div class="game-icon">🎤</div>
+                <h3>Pronunciation Pro</h3>
+                <p>Practice speaking and improve pronunciation</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Story Builder Game -->
+            <div class="game-card" onclick="location.href='story-builder.html'">
+                <div class="game-icon">📖</div>
+                <h3>Story Builder</h3>
+                <p>Create stories using your vocabulary</p>
+                <button class="btn">Play Now</button>
+            </div>
+            
+            <!-- Memory Challenge Game -->
+            <div class="game-card" onclick="location.href='memory-challenge.html'">
+                <div class="game-icon">🧠</div>
+                <h3>Memory Master</h3>
+                <p>Memorize words and test your recall skills</p>
+                <button class="btn">Play Now</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 English Learning Adventure | Fun Games for All Ages</p>
+        </footer>
+    </div>
+
+    <script>
+        // No JavaScript functions needed - all navigation is done via onclick attributes
+    </script>
+</body>
+</html>

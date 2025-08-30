@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Match</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 15px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: #f0f8ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .info-item {
+            text-align: center;
+            flex: 1;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #6e8efb;
+            font-size: 0.9rem;
+        }
+        .info-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            width: 100%;
+        }
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(to bottom, #6e8efb, #a777e3);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            padding: 5px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .card.flipped {
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            transform: scale(0.95);
+        }
+        .card.matched {
+            background: linear-gradient(to bottom, #FFC107, #FF8F00);
+            cursor: default;
+        }
+        .card img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .message {
+            text-align: center;
+            font-size: 1.1rem;
+            margin: 15px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .instructions h3 {
+            color: #6e8efb;
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .instructions p {
+            font-size: 0.95rem;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .cards-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            .card {
+                font-size: 1rem;
+            }
+            .game-info {
+                padding: 10px;
+            }
+            .info-label {
+                font-size: 0.8rem;
+            }
+            .info-value {
+                font-size: 1.1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 0.8rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .cards-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .card {
+                font-size: 0.9rem;
+            }
+            .controls {
+                gap: 10px;
+            }
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            .message {
+                font-size: 0.9rem;
+            }
+            .instructions {
+                padding: 10px;
+            }
+            .instructions h3 {
+                font-size: 1rem;
+            }
+            .instructions p {
+                font-size: 0.85rem;
+            }
+        }
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            .cards-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .card {
+                font-size: 0.8rem;
+            }
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Match</h1>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Score</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Moves</div>
+                <div class="info-value" id="moves">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Matches</div>
+                <div class="info-value" id="matches">0/8</div>
+            </div>
+        </div>
+        
+        <div class="message" id="message">Find matching pairs of words and images!</div>
+        
+        <div class="cards-container" id="cards-container">
+            <!-- Cards will be generated by JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="new-game">New Game</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <p>Click on cards to flip them over and find matching pairs. Match a word with its corresponding image.</p>
+            <p>Try to find all pairs in as few moves as possible!</p>
+        </div>
+    </div>
+
+    <script>
+        // Word Match game implementation
+        class WordMatchGame {
+            constructor() {
+                this.score = 0;
+                this.moves = 0;
+                this.matches = 0;
+                this.totalPairs = 8;
+                this.flippedCards = [];
+                this.lockBoard = false;
+                
+                // Word-image pairs
+                this.pairs = [
+                    { word: "CAT", image: "😺" },
+                    { word: "DOG", image: "🐶" },
+                    { word: "SUN", image: "☀️" },
+                    { word: "MOON", image: "🌙" },
+                    { word: "STAR", image: "⭐" },
+                    { word: "BOOK", image: "📚" },
+                    { word: "FISH", image: "🐠" },
+                    { word: "BIRD", image: "🐦" }
+                ];
+                
+                this.initGame();
+                this.addEventListeners();
+            }
+            
+            initGame() {
+                this.score = 0;
+                this.moves = 0;
+                this.matches = 0;
+                this.flippedCards = [];
+                this.lockBoard = false;
+                
+                this.updateUI();
+                this.generateCards();
+            }
+            
+            generateCards() {
+                const container = document.getElementById('cards-container');
+                container.innerHTML = '';
+                
+                // Create pairs array (each pair appears twice)
+                let gamePairs = [];
+                this.pairs.forEach(pair => {
+                    gamePairs.push({ ...pair, id: pair.word });
+                    gamePairs.push({ ...pair, id: pair.image });
+                });
+                
+                // Shuffle cards
+                gamePairs = this.shuffleArray(gamePairs);
+                
+                // Create card elements
+                gamePairs.forEach((pair, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.id = pair.id;
+                    card.dataset.pair = pair.word;
+                    
+                    if (pair.id === pair.word) {
+                        card.textContent = pair.word;
+                    } else {
+                        card.textContent = pair.image;
+                    }
+                    
+                    card.addEventListener('click', () => this.flipCard(card));
+                    container.appendChild(card);
+                });
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            flipCard(card) {
+                if (this.lockBoard) return;
+                if (card.classList.contains('flipped')) return;
+                if (this.flippedCards.length === 2) return;
+                
+                card.classList.add('flipped');
+                this.flippedCards.push(card);
+                
+                if (this.flippedCards.length === 2) {
+                    this.lockBoard = true;
+                    this.moves++;
+                    this.updateUI();
+                    this.checkForMatch();
+                }
+            }
+            
+            checkForMatch() {
+                const [card1, card2] = this.flippedCards;
+                const isMatch = card1.dataset.pair === card2.dataset.pair;
+                
+                if (isMatch) {
+                    this.handleMatch();
+                } else {
+                    this.handleMismatch();
+                }
+            }
+            
+            handleMatch() {
+                this.matches++;
+                this.score += 10;
+                
+                this.flippedCards.forEach(card => {
+                    card.classList.add('matched');
+                });
+                
+                this.flippedCards = [];
+                this.lockBoard = false;
+                this.updateUI();
+                
+                // Check for win
+                if (this.matches === this.totalPairs) {
+                    setTimeout(() => {
+                        document.getElementById('message').innerHTML = 
+                            `<span class="success">Congratulations! You won with ${this.moves} moves!</span>`;
+                    }, 500);
+                }
+            }
+            
+            handleMismatch() {
+                setTimeout(() => {
+                    this.flippedCards.forEach(card => {
+                        card.classList.remove('flipped');
+                    });
+                    this.flippedCards = [];
+                    this.lockBoard = false;
+                }, 1000);
+            }
+            
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('moves').textContent = this.moves;
+                document.getElementById('matches').textContent = `${this.matches}/${this.totalPairs}`;
+            }
+            
+            newGame() {
+                this.initGame();
+                document.getElementById('message').textContent = "Find matching pairs of words and images!";
+            }
+            
+            addEventListeners() {
+                document.getElementById('new-game').addEventListener('click', () => {
+                    this.newGame();
+                });
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new WordMatchGame();
+        };
+    </script>
+</body>
+</html>

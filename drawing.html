@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Artist</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6e8efb;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .letter-display {
+            font-size: 6rem;
+            font-weight: bold;
+            color: #6e8efb;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .word-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #6e8efb;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+        .canvas-container {
+            border: 3px solid #6e8efb;
+            border-radius: 10px;
+            margin: 20px 0;
+            background-color: white;
+        }
+        #drawing-canvas {
+            cursor: crosshair;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .color-option:hover {
+            transform: scale(1.2);
+        }
+        .color-option.selected {
+            border-color: #333;
+            transform: scale(1.2);
+        }
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .mode-btn.active {
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+        }
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .word-item {
+            background-color: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .word-item:hover {
+            background-color: #bbdefb;
+            transform: translateY(-3px);
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #6e8efb;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Alphabet Artist</h1>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" id="letter-mode">Letter Practice</button>
+            <button class="mode-btn" id="word-mode">Word Spelling</button>
+        </div>
+        
+        <div class="game-area">
+            <div class="letter-display" id="letter-display">A</div>
+            <div class="word-display" id="word-display"></div>
+            
+            <div class="canvas-container">
+                <canvas id="drawing-canvas" width="500" height="300"></canvas>
+            </div>
+            
+            <div class="color-picker" id="color-picker">
+                <!-- Color options will be added by JavaScript -->
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="clear-canvas">Clear Canvas</button>
+                <button class="btn" id="next-letter">Next Letter</button>
+                <button class="btn" id="prev-letter">Previous Letter</button>
+                <button class="btn" id="check-letter">Check Letter</button>
+            </div>
+            
+            <div class="word-list" id="word-list">
+                <!-- Words will be added by JavaScript in word mode -->
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <p><strong>Letter Practice Mode:</strong> Draw the letter shown in the blue box. Use the color picker to change pen colors.</p>
+            <p><strong>Word Spelling Mode:</strong> Select a word and draw each letter to spell it correctly.</p>
+            <p>Click "Check Letter" to see if your drawing matches the letter. Click "Clear Canvas" to start over.</p>
+        </div>
+    </div>
+
+    <script>
+        // Drawing game implementation
+        class DrawingGame {
+            constructor() {
+                this.currentLetterIndex = 0;
+                this.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+                this.currentMode = 'letter'; // 'letter' or 'word'
+                this.currentWord = '';
+                this.currentWordIndex = 0;
+                this.words = [
+                    "CAT", "DOG", "SUN", "MOON", "STAR", 
+                    "BOOK", "FISH", "BIRD", "TREE", "FROG",
+                    "HOUSE", "APPLE", "CHAIR", "WATER", "FRIEND"
+                ];
+                
+                this.colors = [
+                    "#FF0000", "#00FF00", "#0000FF", "#FFFF00", 
+                    "#FF00FF", "#00FFFF", "#000000", "#FFA500"
+                ];
+                this.currentColor = "#000000";
+                
+                this.canvas = document.getElementById('drawing-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isDrawing = false;
+                
+                this.initCanvas();
+                this.initColorPicker();
+                this.updateDisplay();
+                this.addEventListeners();
+            }
+            
+            initCanvas() {
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.lineWidth = 5;
+                this.ctx.lineCap = 'round';
+                this.ctx.strokeStyle = this.currentColor;
+            }
+            
+            initColorPicker() {
+                const colorPicker = document.getElementById('color-picker');
+                colorPicker.innerHTML = '';
+                
+                this.colors.forEach(color => {
+                    const colorOption = document.createElement('div');
+                    colorOption.className = 'color-option';
+                    colorOption.style.backgroundColor = color;
+                    if (color === this.currentColor) {
+                        colorOption.classList.add('selected');
+                    }
+                    colorOption.addEventListener('click', () => {
+                        this.selectColor(color);
+                    });
+                    colorPicker.appendChild(colorOption);
+                });
+            }
+            
+            selectColor(color) {
+                this.currentColor = color;
+                this.ctx.strokeStyle = color;
+                
+                // Update UI
+                document.querySelectorAll('.color-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                event.target.classList.add('selected');
+            }
+            
+            updateDisplay() {
+                if (this.currentMode === 'letter') {
+                    document.getElementById('letter-display').textContent = this.alphabet[this.currentLetterIndex];
+                    document.getElementById('word-display').textContent = '';
+                    document.getElementById('word-list').style.display = 'none';
+                } else {
+                    this.currentWord = this.words[this.currentWordIndex];
+                    document.getElementById('letter-display').textContent = this.currentWord[this.currentLetterIndex];
+                    document.getElementById('word-display').textContent = this.currentWord;
+                    document.getElementById('word-list').style.display = 'flex';
+                    this.renderWordList();
+                }
+            }
+            
+            renderWordList() {
+                const wordList = document.getElementById('word-list');
+                wordList.innerHTML = '';
+                
+                this.words.forEach((word, index) => {
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'word-item';
+                    wordItem.textContent = word;
+                    if (index === this.currentWordIndex) {
+                        wordItem.style.backgroundColor = '#6e8efb';
+                        wordItem.style.color = 'white';
+                    }
+                    wordItem.addEventListener('click', () => {
+                        this.currentWordIndex = index;
+                        this.currentLetterIndex = 0;
+                        this.updateDisplay();
+                    });
+                    wordList.appendChild(wordItem);
+                });
+            }
+            
+            addEventListeners() {
+                // Canvas drawing
+                this.canvas.addEventListener('mousedown', (e) => {
+                    this.isDrawing = true;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, y);
+                });
+                
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (!this.isDrawing) return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.ctx.lineTo(x, y);
+                    this.ctx.stroke();
+                });
+                
+                this.canvas.addEventListener('mouseup', () => {
+                    this.isDrawing = false;
+                });
+                
+                this.canvas.addEventListener('mouseout', () => {
+                    this.isDrawing = false;
+                });
+                
+                // Button events
+                document.getElementById('clear-canvas').addEventListener('click', () => {
+                    this.clearCanvas();
+                });
+                
+                document.getElementById('next-letter').addEventListener('click', () => {
+                    this.nextLetter();
+                });
+                
+                document.getElementById('prev-letter').addEventListener('click', () => {
+                    this.prevLetter();
+                });
+                
+                document.getElementById('check-letter').addEventListener('click', () => {
+                    this.checkLetter();
+                });
+                
+                // Mode switching
+                document.getElementById('letter-mode').addEventListener('click', () => {
+                    this.switchMode('letter');
+                });
+                
+                document.getElementById('word-mode').addEventListener('click', () => {
+                    this.switchMode('word');
+                });
+            }
+            
+            clearCanvas() {
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            nextLetter() {
+                if (this.currentMode === 'letter') {
+                    this.currentLetterIndex = (this.currentLetterIndex + 1) % this.alphabet.length;
+                } else {
+                    this.currentLetterIndex = (this.currentLetterIndex + 1) % this.currentWord.length;
+                }
+                this.updateDisplay();
+            }
+            
+            prevLetter() {
+                if (this.currentMode === 'letter') {
+                    this.currentLetterIndex = (this.currentLetterIndex - 1 + this.alphabet.length) % this.alphabet.length;
+                } else {
+                    this.currentLetterIndex = (this.currentLetterIndex - 1 + this.currentWord.length) % this.currentWord.length;
+                }
+                this.updateDisplay();
+            }
+            
+            checkLetter() {
+                // In a real implementation, this would use image recognition to check
+                // if the drawing matches the letter. For this demo, we'll just show an alert.
+                const currentLetter = this.currentMode === 'letter' 
+                    ? this.alphabet[this.currentLetterIndex]
+                    : this.currentWord[this.currentLetterIndex];
+                    
+                alert(`Great job! You drew the letter ${currentLetter}. Keep practicing!`);
+            }
+            
+            switchMode(mode) {
+                this.currentMode = mode;
+                this.currentLetterIndex = 0;
+                
+                // Update UI
+                document.getElementById('letter-mode').classList.toggle('active', mode === 'letter');
+                document.getElementById('word-mode').classList.toggle('active', mode === 'word');
+                
+                this.updateDisplay();
+            }
+        }
+        
+        // Initialize game when page loads
+        let game;
+        window.onload = () => {
+            game = new DrawingGame();
+        };
+    </script>
+</body>
+</html>
